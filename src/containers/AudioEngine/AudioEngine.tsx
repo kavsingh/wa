@@ -66,12 +66,15 @@ class AudioEngine extends Component<AudioEngineProps> {
 
   public componentDidMount() {
     this.audioContext = getAudioContext()
-    this.mainOutNode = this.audioContext.createGain()
 
-    this.mainOutNode.connect(this.audioContext.destination)
+    if (!this.audioContext) throw new Error('Could not create audio context')
+
+    this.mainOutNode = this.audioContext.createGain()
+    this.audioNodes = { [MAIN_OUT_ID]: this.mainOutNode }
+
     this.updateAudioNodes()
     this.updateAudioGraph()
-    this.createAnalyzer()
+    // this.createAnalyzer()
   }
 
   public shouldComponentUpdate(props: AudioEngineProps) {
@@ -170,6 +173,8 @@ class AudioEngine extends Component<AudioEngineProps> {
   }
 
   private updateAudioGraph() {
+    if (!this.audioContext || !this.mainOutNode) return
+
     this.disconnectAllNodes()
 
     const { connections } = this.props
@@ -180,10 +185,10 @@ class AudioEngine extends Component<AudioEngineProps> {
       const fromNode = this.audioNodes[from]
       const toNode = this.audioNodes[to]
 
-      if (fromNode && toNode) {
-        fromNode.connect(toNode)
-      }
+      if (fromNode && toNode) fromNode.connect(toNode)
     })
+
+    this.mainOutNode.connect(this.audioContext.destination)
   }
 
   private updateNode({ id, audioProps }: { id: string; audioProps: object }) {
