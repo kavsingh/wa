@@ -10,8 +10,8 @@ const defaultNodes: AudioNodeState<
   {
     id: MAIN_OUT_ID,
     label: 'Main',
-    audioProps: {},
-    type: 'AUDIO_CONTEXT',
+    audioProps: { gain: 1 },
+    type: 'MAIN_OUT',
   },
   {
     id: 'looper-default0',

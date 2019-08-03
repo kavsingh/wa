@@ -56,14 +56,22 @@ export interface AudioEngineProps {
 
 class AudioEngine extends Component<AudioEngineProps> {
   private audioContext?: AudioContext
+  private processor?: ScriptProcessorNode
+  private analyzer?: AnalyserNode
+  private mainOutFrequencyData?: Uint8Array
+  private mainOutNode?: GainNode
   private audioNodes: {
     [key: string]: GAudioNode | InstrumentNode | AudioNode
   } = {}
 
   public componentDidMount() {
     this.audioContext = getAudioContext()
+    this.mainOutNode = this.audioContext.createGain()
+
+    this.mainOutNode.connect(this.audioContext.destination)
     this.updateAudioNodes()
     this.updateAudioGraph()
+    this.createAnalyzer()
   }
 
   public shouldComponentUpdate(props: AudioEngineProps) {
@@ -87,6 +95,31 @@ class AudioEngine extends Component<AudioEngineProps> {
     return null
   }
 
+  private handleAudioProcessEvent = () => {
+    if (!this.mainOutFrequencyData || !this.analyzer) return
+
+    this.analyzer.getByteFrequencyData(this.mainOutFrequencyData)
+  }
+
+  private createAnalyzer() {
+    if (!this.audioContext || !this.mainOutNode) return
+
+    this.processor = this.audioContext.createScriptProcessor(2048, 1, 1)
+    this.analyzer = this.audioContext.createAnalyser()
+    this.analyzer.fftSize = 1024
+    this.analyzer.smoothingTimeConstant = 0.3
+    this.mainOutFrequencyData = new Uint8Array(this.analyzer.frequencyBinCount)
+
+    this.analyzer.connect(this.processor)
+    this.processor.connect(this.audioContext.destination)
+    this.mainOutNode.connect(this.analyzer)
+
+    this.processor.addEventListener(
+      'audioprocess',
+      this.handleAudioProcessEvent,
+    )
+  }
+
   private getInstrumentNodes(): InstrumentNode[] {
     return Object.values(this.audioNodes).filter(
       isInstrument,
@@ -94,30 +127,26 @@ class AudioEngine extends Component<AudioEngineProps> {
   }
 
   private forEachInstrument(fn: InstrumentNodeProcessor) {
-    if (!this.audioNodes) {
-      return
-    }
+    if (!this.audioNodes) return
 
     this.getInstrumentNodes().forEach(fn)
   }
 
   private disconnectAllNodes() {
-    if (!this.audioNodes) {
-      return
-    }
+    if (!this.audioNodes) return
 
     Object.values(this.audioNodes).forEach(node => node.disconnect())
   }
 
   private updateAudioNodes() {
-    if (!this.audioContext) return
+    if (!this.audioContext || !this.mainOutNode) return
 
     const { nodes: nextNodes = {}, isPlaying = false } = this.props
     const nextNodeIds = Object.keys(nextNodes)
 
     this.audioNodes = Object.entries(this.audioNodes).length
       ? pick(nextNodeIds, this.audioNodes)
-      : { [MAIN_OUT_ID]: this.audioContext.destination }
+      : { [MAIN_OUT_ID]: this.mainOutNode }
 
     nextNodeIds
       .filter(id => !this.audioNodes[id])
