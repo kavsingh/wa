@@ -11,7 +11,7 @@ import AudioEngine from './AudioEngine'
 
 const ConnectedAudioEngine: FunctionComponent = () => {
   const { connections } = useConnections()
-  const { isPlaying } = useGlobalPlayback()
+  const { isPlaying, setMainOutFrequencyData } = useGlobalPlayback()
   const { nodes } = useAudioNodes()
 
   const dispatch = useDispatch()
@@ -29,6 +29,7 @@ const ConnectedAudioEngine: FunctionComponent = () => {
       connections={connections}
       audioEngineEvents={audioEngineEvents}
       clearAudioEngineEvents={clearAudioEngineEvents}
+      setMainOutFrequencyData={setMainOutFrequencyData}
     />
   )
 }

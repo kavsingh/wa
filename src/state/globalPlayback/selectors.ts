@@ -15,3 +15,8 @@ export const isPlayingSelector = createSelector(
   globalPlaybackSelector,
   prop('isPlaying'),
 )
+
+export const mainOutfrequencyDataSelector = createSelector(
+  globalPlaybackSelector,
+  prop('mainOutFrequencyData'),
+)

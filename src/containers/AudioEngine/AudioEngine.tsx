@@ -52,6 +52,7 @@ export interface AudioEngineProps {
   isPlaying: boolean
   nodes: { [key: string]: AudioNodeState }
   clearAudioEngineEvents(): unknown
+  setMainOutFrequencyData(data: Uint8Array): unknown
 }
 
 class AudioEngine extends Component<AudioEngineProps> {
@@ -74,7 +75,7 @@ class AudioEngine extends Component<AudioEngineProps> {
 
     this.updateAudioNodes()
     this.updateAudioGraph()
-    // this.createAnalyzer()
+    this.createAnalyzer()
   }
 
   public shouldComponentUpdate(props: AudioEngineProps) {
@@ -102,6 +103,7 @@ class AudioEngine extends Component<AudioEngineProps> {
     if (!this.mainOutFrequencyData || !this.analyzer) return
 
     this.analyzer.getByteFrequencyData(this.mainOutFrequencyData)
+    this.props.setMainOutFrequencyData(this.mainOutFrequencyData)
   }
 
   private createAnalyzer() {

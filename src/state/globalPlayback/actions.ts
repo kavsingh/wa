@@ -4,7 +4,11 @@ import { ThunkAction } from 'redux-thunk'
 import { ApplicationState } from '~/state/configureStore'
 
 import { isPlayingSelector } from './selectors'
-import { GlobalPlaybackStartAction, GlobalPlaybackStopAction } from './types'
+import {
+  GlobalPlaybackStartAction,
+  GlobalPlaybackStopAction,
+  GlobalPlaybackSetFrequenctDataAction,
+} from './types'
 
 export const startGlobalPlaybackAction: ActionCreator<
   GlobalPlaybackStartAction
@@ -28,3 +32,10 @@ export const toggleGlobalPlaybackAction = (): ThunkAction<
     dispatch<GlobalPlaybackStartAction>(startGlobalPlaybackAction())
   }
 }
+
+export const setGlobalPlaybackFrequencyData: ActionCreator<
+  GlobalPlaybackSetFrequenctDataAction
+> = (payload: Uint8Array) => ({
+  type: 'GLOBAL_PLAYBACK_SET_FREQUENCY_DATA',
+  payload,
+})
