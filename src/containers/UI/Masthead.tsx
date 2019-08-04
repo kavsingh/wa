@@ -7,7 +7,7 @@ import useGlobalPlayback from '~/state/hooks/useGlobalPlayback'
 import useUITheme from '~/state/hooks/useUITheme'
 import { UITheme } from '~/style/theme'
 import PlayPauseButton from '~/components/PlayPauseButton'
-import { take } from 'ramda'
+import Spectrograph from './Spectrograph'
 
 const mastheadStyle = css({
   alignItems: 'center',
@@ -16,9 +16,9 @@ const mastheadStyle = css({
   width: '100%',
 })
 
-const spectrographStyle = css({
+const spectrographContainerStyle = css({
   flex: 1,
-  alignItems: 'center',
+  height: '1.4em',
 })
 
 const metaControlStyle = (theme: UITheme) =>
@@ -52,18 +52,14 @@ const metaControlStyle = (theme: UITheme) =>
   })
 
 const Masthead: FunctionComponent = () => {
-  const {
-    isPlaying,
-    togglePlayback,
-    mainOutFrequencyData,
-  } = useGlobalPlayback()
+  const { isPlaying, togglePlayback } = useGlobalPlayback()
   const { toggleTheme } = useUITheme()
 
   return (
     <div css={mastheadStyle}>
       <PlayPauseButton isPlaying={isPlaying} onClick={togglePlayback} />
-      <div css={spectrographStyle}>
-        {take(10, mainOutFrequencyData || []).join(' ')}
+      <div css={spectrographContainerStyle}>
+        <Spectrograph />
       </div>
       <div css={metaControlStyle}>
         <button onClick={toggleTheme}>L/D</button>
