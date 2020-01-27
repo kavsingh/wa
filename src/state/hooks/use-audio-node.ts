@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { equals } from 'ramda'
 
-import { AudioNodeState, AudioNodeConnection } from '~/types'
 import {
   updateAudioNodeAudioPropsAction,
   updateAudioNodeLabelAction,
@@ -10,15 +9,16 @@ import {
   removeAudioNodeAction,
 } from '~/state/audio-nodes/actions'
 import { getConnectionsFor } from '~/lib/audio'
+import type { AudioNodeState, AudioNodeConnection } from '~/types'
 
 import {
   audioNodesSelector,
   activeAudioNodeIdsSelector,
 } from '../audio-nodes/selectors'
 import { connectionsSelector } from '../connections/selectors'
-import { ApplicationState } from '../configure-store'
+import type { ApplicationState } from '../configure-store'
 
-const useAudioNode = <T extends object>(
+const useAudioNode = <P extends object>(
   id: string,
   isValid: AudioNodeStateValidator,
 ) => {
@@ -45,7 +45,7 @@ const useAudioNode = <T extends object>(
   ])
 
   const updateAudioProps = useCallback(
-    (audioProps: Partial<T>) =>
+    (audioProps: Partial<P>) =>
       dispatch(updateAudioNodeAudioPropsAction(id, audioProps)),
     [id, dispatch],
   )
@@ -71,10 +71,24 @@ const useAudioNode = <T extends object>(
   return [
     { connections, isActive, label: node.label, audioProps: node.audioProps },
     { updateAudioProps, updateLabel, duplicate, remove },
-  ] as const
+  ]
 }
 
 export default useAudioNode
+
+export interface UseAudioNodeState<P extends object> {
+  connections: AudioNodeConnection[]
+  isActive: boolean
+  label: string
+  audioProps: P
+}
+
+export interface UseAudioNodeActions<P extends object> {
+  updateAudioProps(props: Partial<P>): void
+  updateLabel(label: string): void
+  duplicate(): void
+  remove(): void
+}
 
 export type AudioNodeStateValidator = (node: AudioNodeState<{}>) => boolean
 

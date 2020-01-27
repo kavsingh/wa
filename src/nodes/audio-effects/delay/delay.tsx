@@ -1,11 +1,98 @@
-import React, { memo, FunctionComponent, useCallback, useMemo } from 'react'
+import React, { useCallback } from 'react'
 import styled from '@emotion/styled'
 
-import { AudioNodeConnection } from '~/types'
+import { FunctionComponentWithoutChildren } from '~/types'
 import { DELAY_UPPER_BOUND } from '~/constants/audio'
-import { noop } from '~/lib/util'
 import Knob from '~/components/knob'
 import TitleBar from '~/components/title-bar'
+
+import { useAudioNodeStateContext } from '../../lib/context'
+import { Props } from './node-props'
+
+const Delay: FunctionComponentWithoutChildren = () => {
+  const [{ isActive }] = useAudioNodeStateContext<Props>()
+
+  return (
+    <Container isActive={isActive}>
+      <DelayTitleBar />
+      <ControlsContainer>
+        <KnobContainer key="time">
+          <TimeKnob />
+        </KnobContainer>
+        <KnobContainer key="wetDry">
+          <WetDryKnob />
+        </KnobContainer>
+      </ControlsContainer>
+    </Container>
+  )
+}
+
+export default Delay
+
+const DelayTitleBar: FunctionComponentWithoutChildren = () => {
+  const [
+    { label, connections },
+    { remove, updateLabel },
+  ] = useAudioNodeStateContext<Props>()
+
+  return (
+    <TitleBar
+      type="Delay"
+      label={label}
+      connections={connections}
+      onLabelChange={updateLabel}
+      onRemoveClick={remove}
+    />
+  )
+}
+
+const TimeKnob: FunctionComponentWithoutChildren = () => {
+  const [{ audioProps }, { updateAudioProps }] = useAudioNodeStateContext<
+    Props
+  >()
+
+  const handleChange = useCallback(
+    (val: number) => {
+      updateAudioProps({ delayTime: val * DELAY_UPPER_BOUND })
+    },
+    [updateAudioProps],
+  )
+
+  return (
+    <Knob
+      radius="2.4em"
+      value={audioProps.delayTime / DELAY_UPPER_BOUND}
+      onChange={handleChange}
+      label="T"
+      title="Delay Time"
+      valueLabel={audioProps.delayTime.toFixed(2)}
+    />
+  )
+}
+
+const WetDryKnob: FunctionComponentWithoutChildren = () => {
+  const [{ audioProps }, { updateAudioProps }] = useAudioNodeStateContext<
+    Props
+  >()
+
+  const handleChange = useCallback(
+    (val: number) => {
+      updateAudioProps({ wetDryRatio: val * DELAY_UPPER_BOUND })
+    },
+    [updateAudioProps],
+  )
+
+  return (
+    <Knob
+      radius="2.4em"
+      value={audioProps.wetDryRatio}
+      onChange={handleChange}
+      label="W / D"
+      title="Wet / Dry Ratio"
+      valueLabel={`${(audioProps.wetDryRatio * 100).toFixed(1)}%`}
+    />
+  )
+}
 
 const Container = styled.div<{ isActive: boolean }>`
   width: 100%;
@@ -21,87 +108,3 @@ const ControlsContainer = styled.div`
 const KnobContainer = styled.div`
   flex: 0 0 3em;
 `
-
-export interface DelayProps {
-  label: string
-  connections: AudioNodeConnection[]
-  wetDryRatio: number
-  delayTime: number
-  isActive: boolean
-  onDelayTimeChange(delayTime: number): unknown
-  onWetDryRatioChange(wetDryRatio: number): unknown
-  onLabelChange(label: string): unknown
-  remove(): unknown
-}
-
-const Delay: FunctionComponent<DelayProps> = ({
-  label = 'Delay',
-  connections = [],
-  wetDryRatio = 0.5,
-  delayTime = 1,
-  isActive = true,
-  onDelayTimeChange = noop,
-  onWetDryRatioChange = noop,
-  onLabelChange = noop,
-  remove = noop,
-}) => {
-  const handleTimeKnobChange = useCallback(
-    (val: number) => {
-      onDelayTimeChange(val * DELAY_UPPER_BOUND)
-    },
-    [onDelayTimeChange],
-  )
-
-  const titleBar = useMemo(
-    () => (
-      <TitleBar
-        type="Delay"
-        label={label}
-        connections={connections}
-        onLabelChange={onLabelChange}
-        onRemoveClick={remove}
-      />
-    ),
-    [connections, label, onLabelChange, remove],
-  )
-
-  const timeKnob = useMemo(
-    () => (
-      <Knob
-        radius="2.4em"
-        value={delayTime / DELAY_UPPER_BOUND}
-        onChange={handleTimeKnobChange}
-        label="T"
-        title="Delay Time"
-        valueLabel={delayTime.toFixed(2)}
-      />
-    ),
-    [delayTime, handleTimeKnobChange],
-  )
-
-  const wetDryKnob = useMemo(
-    () => (
-      <Knob
-        radius="2.4em"
-        value={wetDryRatio}
-        onChange={onWetDryRatioChange}
-        label="W / D"
-        title="Wet / Dry Ratio"
-        valueLabel={`${(wetDryRatio * 100).toFixed(1)}%`}
-      />
-    ),
-    [onWetDryRatioChange, wetDryRatio],
-  )
-
-  return (
-    <Container isActive={isActive}>
-      {titleBar}
-      <ControlsContainer>
-        <KnobContainer key="time">{timeKnob}</KnobContainer>
-        <KnobContainer key="wetDry">{wetDryKnob}</KnobContainer>
-      </ControlsContainer>
-    </Container>
-  )
-}
-
-export default memo(Delay)
