@@ -7,7 +7,7 @@ import Knob from '~/components/knob'
 import TitleBar from '~/components/title-bar'
 
 import { useAudioNodeStateContext } from '../../lib/context'
-import { Props } from './node-props'
+import type { Props } from './node-props'
 
 const Delay: FunctionComponentWithoutChildren = () => {
   const [{ isActive }] = useAudioNodeStateContext<Props>()

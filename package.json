@@ -13,7 +13,7 @@
   "scripts": {
     "dev": "NODE_ENV=development TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' webpack-dev-server",
     "dev:public": "PUBLIC=true NODE_ENV=development TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' webpack-dev-server",
-    "lint": "tsc && eslint --ext .js,.ts,.tsx .",
+    "lint": "eslint --ext .js,.ts,.tsx .",
     "jest": "NODE_ENV=test jest",
     "test": "tsc && npm run jest -- --coverage --verbose",
     "test:mutation": "stryker run",
